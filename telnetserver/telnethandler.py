@@ -259,14 +259,16 @@ class TelnetHandler(object):
             self.deal_right_line()
 
     def get_history_line(self):
+        move_str, history_line = TelnetCMD.BEL, []
         sursor_str = SpecialSymbol.MOVE_LEFT * self.cursor_index
         del_right_str = SpecialSymbol.DEL_RIGHT * len(self.current_line)
         if 0 <= self.history_index < self.history_len:
-            self.set_cur_line(self.history[self.history_index])
-        else:
-            self.clear_current_line()
-        send_str = ''.join(self.current_line)
-        return "%s%s%s" % (sursor_str, del_right_str, send_str)
+            history_line = self.history[self.history_index][:]
+        if history_line != self.current_line:
+            self.set_cur_line(history_line)
+            send_str = ''.join(self.current_line)
+            move_str = "%s%s%s" % (sursor_str, del_right_str, send_str)
+        return move_str
 
     def handle_arrow_left(self):
         move_str = TelnetCMD.BEL
@@ -291,26 +293,22 @@ class TelnetHandler(object):
 
     def handle_arrow_down(self):
         move_str = TelnetCMD.BEL
-        if 0 <= self.history_index < self.history_len - 1:
+        if 0 <= self.history_index < self.history_len:
             self.history_index += 1
             move_str = self.get_history_line()
         self.prepare_send_text(move_str)
 
     # goto the first cmd history record!
     def handle_pageup(self):
-        move_str = TelnetCMD.BEL
         if 0 < self.history_index <= self.history_len:
             self.history_index = 0
-            move_str = self.get_history_line()
-        self.prepare_send_text(move_str)
+        self.prepare_send_text(self.get_history_line())
 
     # goto the last cmd history record!
     def handle_pagedown(self):
-        move_str = TelnetCMD.BEL
         if 0 <= self.history_index < self.history_len - 1:
             self.history_index = self.history_len - 1
-            move_str = self.get_history_line()
-        self.prepare_send_text(move_str)
+        self.prepare_send_text(self.get_history_line())
 
     def handle_nop(self, cmd, opt):
         self.send_command(TelnetCMD.NOP)
@@ -375,7 +373,7 @@ class TelnetHandler(object):
             self.send_text(SpecialKey.W_ENTER)
             self.conn_handler.run_script(script_str)
             self.add_cmd_to_history(self.current_line)
-            self.clear_current_line()
+            self.set_cur_line()
         else:
             self.handle_exit()
 
@@ -402,14 +400,11 @@ class TelnetHandler(object):
             self.history_len += 1
         self.history_index = self.history_len
 
-    def set_cur_line(self, char_list):
-        if char_list:
-            self.current_line = char_list
-            self.cursor_index = len(char_list)
-
-    def clear_current_line(self):
-        self.current_line = []
-        self.cursor_index = 0
+    def set_cur_line(self, char_list=[]):
+        if not char_list or not isinstance(char_list, list):
+            char_list = []
+        self.current_line = char_list
+        self.cursor_index = len(char_list)
 
     def deal_right_line(self):
         if self.cursor_index < len(self.current_line):

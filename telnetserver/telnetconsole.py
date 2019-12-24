@@ -122,6 +122,7 @@ class TelnetServer(asyncore.dispatcher):
         while True:
             try:
                 self.bind((self._host, port))
+                self.set_reuse_addr()
                 break
             except:
                 if port >= 65535:
@@ -242,9 +243,7 @@ class TelnetConsole(object):
 
 
 if __name__ == "__main__":
-    test = TelnetConsole(port=12345, host="192.168.0.103", local_dict=locals())
-    t = ("192.168.0.103")
-    test.set_whitelist(t)
+    test = TelnetConsole(port=12345, local_dict=locals())
     test.switch = True
     while True:
         pass
