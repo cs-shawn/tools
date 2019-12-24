@@ -109,13 +109,13 @@ class SpecialSymbol(object):
     MOVE_LEFT = '\x1b[D'
     MOVE_RIGHT = '\x1b[C'
     DEL_RIGHT = '\x1b[K'
-    REPLACE_TAB_SPACE = '    '
     EXIT = 'exit()'
     QUIT = 'quit()'
 
 
 class Const(object):
     MAX_HISTORY_NUMS = 20
+    TAB_TO_SPACE_NUM = 4
 
     USEFUL_CMDS = (
         TelnetCMD.DO,
@@ -260,8 +260,8 @@ class TelnetHandler(object):
 
     def get_history_line(self):
         move_str, history_line = TelnetCMD.BEL, []
-        sursor_str = SpecialSymbol.MOVE_LEFT * self.cursor_index
-        del_right_str = SpecialSymbol.DEL_RIGHT * len(self.current_line)
+        sursor_str = SpecialSymbol.MOVE_LEFT * self.get_line_len(self.current_line[:self.cursor_index])
+        del_right_str = SpecialSymbol.DEL_RIGHT * self.get_line_len(self.current_line)
         if 0 <= self.history_index < self.history_len:
             history_line = self.history[self.history_index][:]
         if history_line != self.current_line:
@@ -269,6 +269,14 @@ class TelnetHandler(object):
             send_str = ''.join(self.current_line)
             move_str = "%s%s%s" % (sursor_str, del_right_str, send_str)
         return move_str
+
+    # sepcial count for tab
+    def get_line_len(self, line):
+        ret_len = 0
+        if line and isinstance(line, list):
+            for i in line:
+                ret_len += Const.TAB_TO_SPACE_NUM if i == '\t' else 1
+        return ret_len
 
     def handle_arrow_left(self):
         move_str = TelnetCMD.BEL
