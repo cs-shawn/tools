@@ -8,7 +8,6 @@ from collections import Iterable
 from cStringIO import StringIO
 import telnethandler
 
-
 DEFAULT_RECV_BUFFER = 2048
 
 
@@ -189,7 +188,7 @@ class TelnetConsole(object):
     def __init__(self, port, host="127.0.0.1", local_dict={}):
         self._running = False
         self._whitelist = None
-        self.local_dict = local_dict
+        self.local_dict = local_dict.copy()
         self._telnet_handler = TelnetServer(host, port, self.local_dict)
         self.start_loop()
 
