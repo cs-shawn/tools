@@ -240,9 +240,9 @@ class TelnetConsole(object):
         t = threading.Thread(target=self.loop, name="telnet_console")
         t.start()
 
-
+import time
 if __name__ == "__main__":
     test = TelnetConsole(port=12345, local_dict=locals())
     test.switch = True
     while True:
-        pass
+        time.sleep(60)
