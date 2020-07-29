@@ -191,10 +191,9 @@ class TelnetServer(asyncore.dispatcher):
 
 
 class TelnetConsole(object):
-    def __init__(self, port, host="10.240.176.191", local_dict={}):
-        # def __init__(self, port, host="127.0.0.1", local_dict={}):
+    def __init__(self, port, host="127.0.0.1", local_dict={}):
         self._running = False
-        self._whitelist = ["10.246.52.23"]
+        self._whitelist = []
         self.local_dict = local_dict.copy()
         self._telnet_handler = TelnetServer(
             host, port, self.local_dict, self._whitelist)
